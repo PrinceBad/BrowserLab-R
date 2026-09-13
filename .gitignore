@@ -35,3 +35,5 @@ Thumbs.db
 # Temporary directories
 tmp/
 .tmp/
+
+.vercel

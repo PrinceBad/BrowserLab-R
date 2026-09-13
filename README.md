@@ -10,11 +10,11 @@
 [![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge&labelColor=0d1117)](LICENSE)
 [![Zero Cloud](https://img.shields.io/badge/architecture-100%25%20Client--Side-10b981?style=for-the-badge&labelColor=0d1117)](#why-browserlab-r)
 [![Curriculum](https://img.shields.io/badge/curriculum-NIELIT%20'A'%20Level%20(Rev%20V)-8b5cf6?style=for-the-badge&labelColor=0d1117)](#curriculum-matrix)
-[![Vite](https://img.shields.io/badge/frontend-React%2019%20%2B%20Vite-646cff?style=for-the-badge&logo=vite&labelColor=0d1117)](#tech-stack)
+[![Deploy with Vercel](https://img.shields.io/badge/deploy-Vercel-black?style=for-the-badge&logo=vercel&labelColor=0d1117)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FPrinceBad%2FBrowserLab-R)
 
 <br/>
 
-[**Why BrowserLab R?**](#why-browserlab-r) • [**Dual-Engine Architecture**](#dual-engine-architecture) • [**Pedagogical Framework**](#pedagogical-framework) • [**Sandboxing & Benchmarks**](#sandboxing--benchmarks) • [**Curriculum Matrix**](#curriculum-matrix) • [**Quick Start**](#quick-start)
+[**Why BrowserLab R?**](#why-browserlab-r) • [**Dual-Engine Architecture**](#dual-engine-architecture) • [**Pedagogical Framework**](#pedagogical-framework) • [**Sandboxing & Benchmarks**](#sandboxing--benchmarks) • [**Curriculum Matrix**](#curriculum-matrix) • [**Quick Start**](#quick-start) • [**Deploy**](#deploy-to-vercel-one-click)
 
 </div>
 
@@ -158,6 +158,18 @@ npm run dev
 ```
 
 Open [http://localhost:5173/](http://localhost:5173/) in your browser. The WebR WebAssembly runtime will initialize automatically within seconds.
+ 
+### Deploy to Vercel (One-Click)
+
+BrowserLab R is preconfigured for zero-config Vercel deployment with cross-origin isolation (`COOP`/`COEP`) and SPA rewrites defined in `vercel.json`:
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FPrinceBad%2FBrowserLab-R)
+
+Or deploy via the command line:
+
+```bash
+npx vercel
+```
 
 ---
 
