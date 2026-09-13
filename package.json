@@ -1,7 +1,12 @@
 {
   "name": "browserlab-r",
   "private": true,
-  "version": "1.2.0",
+  "version": "1.3.3",
+  "homepage": "https://browserlab.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PrinceBad/BrowserLab-R.git"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",

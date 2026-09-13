@@ -6,6 +6,7 @@
 
 <br/>
 
+[![Live Demo](https://img.shields.io/badge/live%20app-browserlab.vercel.app-00df8f?style=for-the-badge&logo=vercel&labelColor=0d1117)](https://browserlab.vercel.app/)
 [![WASM Engine](https://img.shields.io/badge/WebR-0.4.2%20(R%204.3)-3b82f6?style=for-the-badge&logo=r&labelColor=0d1117)](https://docs.r-wasm.org/webr/latest/)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge&labelColor=0d1117)](LICENSE)
 [![Zero Cloud](https://img.shields.io/badge/architecture-100%25%20Client--Side-10b981?style=for-the-badge&labelColor=0d1117)](#why-browserlab-r)
@@ -14,7 +15,7 @@
 
 <br/>
 
-[**Why BrowserLab R?**](#why-browserlab-r) • [**Dual-Engine Architecture**](#dual-engine-architecture) • [**Pedagogical Framework**](#pedagogical-framework) • [**Sandboxing & Benchmarks**](#sandboxing--benchmarks) • [**Curriculum Matrix**](#curriculum-matrix) • [**Quick Start**](#quick-start) • [**Deploy**](#deploy-to-vercel-one-click)
+[**🚀 Live App**](https://browserlab.vercel.app/) • [**Why BrowserLab R?**](#why-browserlab-r) • [**Dual-Engine Architecture**](#dual-engine-architecture) • [**Pedagogical Framework**](#pedagogical-framework) • [**Sandboxing & Benchmarks**](#sandboxing--benchmarks) • [**Curriculum Matrix**](#curriculum-matrix) • [**Quick Start**](#quick-start) • [**Deploy**](#deploy-to-vercel-one-click)
 
 </div>
 
@@ -23,6 +24,13 @@
 > [!IMPORTANT]
 > **BrowserLab R executes 100% client-side inside a browser WebAssembly (WASM) Web Worker.**
 > No data frames, student scripts, or analytical queries are ever uploaded to an external server or cloud database. All statistical models, visualizations, and diagnostic assertions execute in browser memory.
+
+---
+
+## Live Production Deployment
+
+BrowserLab R is live and globally accessible with zero install:
+👉 **[https://browserlab.vercel.app/](https://browserlab.vercel.app/)**
 
 ---
 
