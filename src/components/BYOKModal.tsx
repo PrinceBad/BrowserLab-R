@@ -69,13 +69,19 @@ export const BYOKModal: React.FC<BYOKModalProps> = ({
           </label>
 
           <label className="form-label">
-            <span>API Key:</span>
+            <span>Client LLM Token (Optional):</span>
             <input
               type="password"
+              name="client_side_llm_token"
+              id="client-side-llm-token"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
               className="styled-input"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              placeholder="Paste your API key here..."
+              placeholder="Client-side token for browser-only queries..."
             />
           </label>
         </div>
