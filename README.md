@@ -15,9 +15,21 @@
 
 <br/>
 
-[**🚀 Live App**](https://browserlab.vercel.app/) • [**Why BrowserLab R?**](#why-browserlab-r) • [**Dual-Engine Architecture**](#dual-engine-architecture) • [**Pedagogical Framework**](#pedagogical-framework) • [**Sandboxing & Benchmarks**](#sandboxing--benchmarks) • [**Curriculum Matrix**](#curriculum-matrix) • [**Quick Start**](#quick-start) • [**Deploy**](#deploy-to-vercel-one-click)
+[**🚀 Live Demo**](https://browserlab.vercel.app/) • [**Why BrowserLab R?**](#why-browserlab-r) • [**Dual-Engine Architecture**](#dual-engine-architecture) • [**Pedagogical Framework**](#pedagogical-framework) • [**Sandboxing & Benchmarks**](#sandboxing--benchmarks) • [**Curriculum Matrix**](#curriculum-matrix) • [**Quick Start**](#quick-start) • [**Deploy**](#deploy-to-vercel-one-click)
 
 </div>
+
+<p align="center">
+  <a href="https://browserlab.vercel.app/" target="_blank" rel="noopener noreferrer">
+    <img src="docs/demo.png" alt="BrowserLab R Live Application Demo" width="850">
+  </a>
+</p>
+
+<p align="center">
+  <strong>Zero install · 100% In-Browser · WebR WASM 4.3 Engine · Real-Time Statistical Studio</strong>
+  <br/>
+  👉 <a href="https://browserlab.vercel.app/"><strong>Open Live Application: https://browserlab.vercel.app/</strong></a>
+</p>
 
 ---
 
@@ -27,10 +39,38 @@
 
 ---
 
-## Live Production Deployment
+## Live Application Demo
 
-BrowserLab R is live and globally accessible with zero install:
-👉 **[https://browserlab.vercel.app/](https://browserlab.vercel.app/)**
+Experience the full client-side R computing environment without installing any software or signing up:
+
+<p align="center">
+  <a href="https://browserlab.vercel.app/" target="_blank" rel="noopener noreferrer">
+    <img src="https://img.shields.io/badge/▶_Launch_BrowserLab_R_Demo-00df8f?style=for-the-badge&logo=vercel&logoColor=black&labelColor=0d1117" height="42" alt="Launch BrowserLab R">
+  </a>
+</p>
+
+```
+/select-experiment         /predict                /check-my-work
+       │                       │                          │
+       ▼                       ▼                          ▼
+  Choose NIELIT          Commit to mental           In-engine assertion
+  curriculum lab         model prediction           grader evaluates
+  (Modules 3 & 4)        on language traps          browser WebR memory
+       │                       │                          │
+       ▼                       ▼                          ▼
+  Scaffolded R code      Instant feedback           Differentiated hints
+  loads in editor        clarifying concepts        pinpoint exact traps
+```
+
+### Studio Modes at a Glance
+
+<div align="center">
+
+| NIELIT Pedagogical IDE (Interactive Challenge & Plots) | Deterministic AI Statistical Audit (APA 7th Reports) |
+| :---: | :---: |
+| <img src="docs/lab2_demo.png" alt="NIELIT Lab 2 Guided Challenge" width="410" /> | <img src="docs/audit_demo.png" alt="AI Statistical Audit Co-Pilot" width="410" /> |
+
+</div>
 
 ---
 
