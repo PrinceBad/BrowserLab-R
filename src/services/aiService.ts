@@ -1,7 +1,69 @@
-import { StatisticalAuditPayload } from '../types';
+export type LLMProvider = 'builtin' | 'gemini' | 'openai' | 'groq' | 'deepseek' | 'anthropic';
+
+export interface ModelOption {
+  id: string;
+  name: string;
+  badge?: string;
+}
+
+export interface ProviderSpec {
+  name: string;
+  defaultModel: string;
+  models: ModelOption[];
+}
+
+export const PROVIDER_SPECS: Record<Exclude<LLMProvider, 'builtin'>, ProviderSpec> = {
+  gemini: {
+    name: 'Google Gemini',
+    defaultModel: 'gemini-2.5-flash',
+    models: [
+      { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', badge: 'Recommended · Fastest' },
+      { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', badge: 'Deep Reasoning' },
+      { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', badge: 'Stable' },
+      { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', badge: 'Legacy' },
+    ],
+  },
+  openai: {
+    name: 'OpenAI',
+    defaultModel: 'gpt-4o',
+    models: [
+      { id: 'gpt-4o', name: 'GPT-4o', badge: 'Flagship Multimodal' },
+      { id: 'o3-mini', name: 'o3-mini', badge: 'STEM & Math Reasoning' },
+      { id: 'gpt-4o-mini', name: 'GPT-4o Mini', badge: 'Fast & Lightweight' },
+      { id: 'o1', name: 'o1', badge: 'Full Reasoning' },
+    ],
+  },
+  groq: {
+    name: 'Groq Cloud',
+    defaultModel: 'llama-3.3-70b-versatile',
+    models: [
+      { id: 'llama-3.3-70b-versatile', name: 'LLaMA 3.3 70B', badge: 'Ultra-Fast 250+ T/s' },
+      { id: 'deepseek-r1-distill-llama-70b', name: 'DeepSeek R1 Distill 70B', badge: 'Reasoning' },
+      { id: 'mixtral-8x7b-32768', name: 'Mixtral 8x7B', badge: 'High-Throughput' },
+    ],
+  },
+  deepseek: {
+    name: 'DeepSeek',
+    defaultModel: 'deepseek-chat',
+    models: [
+      { id: 'deepseek-chat', name: 'DeepSeek-V3 (deepseek-chat)', badge: 'SOTA General' },
+      { id: 'deepseek-reasoner', name: 'DeepSeek-R1 (deepseek-reasoner)', badge: 'Full Chain-of-Thought' },
+    ],
+  },
+  anthropic: {
+    name: 'Anthropic Claude',
+    defaultModel: 'claude-3-7-sonnet-20250219',
+    models: [
+      { id: 'claude-3-7-sonnet-20250219', name: 'Claude 3.7 Sonnet', badge: 'Hybrid Reasoning' },
+      { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet', badge: 'High Accuracy' },
+      { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku', badge: 'Ultra-Fast' },
+    ],
+  },
+};
 
 export interface AIConfig {
-  provider: 'builtin' | 'gemini' | 'openai' | 'groq';
+  provider: LLMProvider;
+  model?: string;
   apiKey?: string;
 }
 
@@ -21,8 +83,13 @@ export class AIService {
     }
   }
 
-  public saveConfig(provider: 'gemini' | 'openai' | 'groq', apiKey: string) {
-    this.config = { provider, apiKey };
+  public saveConfig(provider: LLMProvider, apiKey: string, model?: string) {
+    const defaultModel = provider !== 'builtin' ? PROVIDER_SPECS[provider]?.defaultModel : undefined;
+    this.config = {
+      provider,
+      apiKey,
+      model: model || defaultModel,
+    };
     localStorage.setItem('webr_audit_ai_config', JSON.stringify(this.config));
   }
 
