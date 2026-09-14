@@ -264,6 +264,9 @@ export class AIService {
   }
 
   private async callExternalLLM(payload: StatisticalAuditPayload): Promise<string> {
+    const model = this.config.model
+      || (this.config.provider !== 'builtin' ? PROVIDER_SPECS[this.config.provider]?.defaultModel : undefined);
+
     const prompt = `You are a scientific biostatistical auditor writing an APA 7th edition report.
 CRITICAL CONSTRAINT: You must be strictly bounded by the following verified numerical metrics extracted directly from the user's WebR WASM session. You MUST NOT change, round, or hallucinate any numbers.
 
@@ -280,8 +283,10 @@ VIF Multicollinearity: Max VIF = ${payload.vif.maxVif}, terms = ${JSON.stringify
 
 Format your output in clean HTML with an APA 7th summary, parameter table, covariate interpretations, and an explicit diagnostic section citing the exact W, Chi-sq, and VIF values.`;
 
+    // ── Gemini ──────────────────────────────────────────────────────────────
     if (this.config.provider === 'gemini') {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${this.config.apiKey}`;
+      const modelId = model || 'gemini-2.5-flash';
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${this.config.apiKey}`;
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -292,12 +297,14 @@ Format your output in clean HTML with an APA 7th summary, parameter table, covar
       return `<div class="llm-rendered-report">${data.candidates?.[0]?.content?.parts?.[0]?.text || ''}</div>`;
     }
 
-    if (this.config.provider === 'openai' || this.config.provider === 'groq') {
-      const endpoint = this.config.provider === 'groq'
-        ? 'https://api.groq.com/openai/v1/chat/completions'
-        : 'https://api.openai.com/v1/chat/completions';
-      const model = this.config.provider === 'groq' ? 'llama-3.3-70b-versatile' : 'gpt-4o-mini';
-
+    // ── OpenAI-compatible providers (openai, groq, deepseek) ────────────────
+    if (this.config.provider === 'openai' || this.config.provider === 'groq' || this.config.provider === 'deepseek') {
+      const endpoints: Record<string, string> = {
+        openai:   'https://api.openai.com/v1/chat/completions',
+        groq:     'https://api.groq.com/openai/v1/chat/completions',
+        deepseek: 'https://api.deepseek.com/v1/chat/completions',
+      };
+      const endpoint = endpoints[this.config.provider];
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: {
@@ -305,7 +312,7 @@ Format your output in clean HTML with an APA 7th summary, parameter table, covar
           Authorization: `Bearer ${this.config.apiKey}`,
         },
         body: JSON.stringify({
-          model,
+          model: model,
           messages: [
             { role: 'system', content: 'You are an APA 7th statistical reporting engine. Output clean HTML.' },
             { role: 'user', content: prompt },
@@ -318,8 +325,32 @@ Format your output in clean HTML with an APA 7th summary, parameter table, covar
       return `<div class="llm-rendered-report">${data.choices?.[0]?.message?.content || ''}</div>`;
     }
 
+    // ── Anthropic ────────────────────────────────────────────────────────────
+    if (this.config.provider === 'anthropic') {
+      const modelId = model || 'claude-3-7-sonnet-20250219';
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': this.config.apiKey!,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify({
+          model: modelId,
+          max_tokens: 4096,
+          messages: [{ role: 'user', content: prompt }],
+          system: 'You are an APA 7th statistical reporting engine. Output clean HTML.',
+        }),
+      });
+      if (!res.ok) throw new Error(`Anthropic API returned HTTP ${res.status}`);
+      const data = await res.json();
+      return `<div class="llm-rendered-report">${data.content?.[0]?.text || ''}</div>`;
+    }
+
     return this.generateDeterministicReport(payload);
   }
 }
+
 
 export const aiService = new AIService();

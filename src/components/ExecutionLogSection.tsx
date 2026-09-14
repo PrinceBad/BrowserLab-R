@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { StageStep } from '../types';
 
 interface ExecutionLogSectionProps {
@@ -6,7 +6,32 @@ interface ExecutionLogSectionProps {
   error: { message: string; rCall?: string } | null;
 }
 
+function ElapsedTimer({ startTime }: { startTime: number }) {
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setElapsed(Date.now() - startTime);
+    }, 100);
+    return () => clearInterval(id);
+  }, [startTime]);
+
+  return <span className="elapsed-timer">{(elapsed / 1000).toFixed(1)}s</span>;
+}
+
 export const ExecutionLogSection: React.FC<ExecutionLogSectionProps> = ({ steps, error }) => {
+  // Track when each step became active to calculate elapsed time
+  const activeTimestamps = useRef<Record<string, number>>({});
+
+  steps.forEach((s) => {
+    if (s.status === 'active' && !activeTimestamps.current[s.id]) {
+      activeTimestamps.current[s.id] = Date.now();
+    }
+    if (s.status !== 'active') {
+      delete activeTimestamps.current[s.id];
+    }
+  });
+
   return (
     <section className="notebook-cell" id="cell-execution">
       <div className="cell-header">
@@ -41,9 +66,22 @@ export const ExecutionLogSection: React.FC<ExecutionLogSectionProps> = ({ steps,
                 <div className="node-content">
                   <div className="node-header">
                     <span className="node-label">{s.label}</span>
-                    {s.timestamp && <span className="node-time">{s.timestamp}</span>}
+                    <div className="node-time-group">
+                      {s.status === 'active' && activeTimestamps.current[s.id] && (
+                        <ElapsedTimer startTime={activeTimestamps.current[s.id]} />
+                      )}
+                      {s.timestamp && s.status !== 'active' && (
+                        <span className="node-time">{s.timestamp}</span>
+                      )}
+                    </div>
                   </div>
                   {s.detail && <span className="node-detail">{s.detail}</span>}
+                  {/* Progress bar for active step */}
+                  {s.status === 'active' && (
+                    <div className="step-progress-bar">
+                      <div className="step-progress-fill" />
+                    </div>
+                  )}
                 </div>
               </div>
             );

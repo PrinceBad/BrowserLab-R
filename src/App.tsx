@@ -228,6 +228,7 @@ export const App: React.FC = () => {
               selectedDataset={selectedDataset}
               onSelectDataset={setSelectedDataset}
               datasetInfo={datasetInfo}
+              engineReady={engineReady}
             />
 
             {/* 02. Research Question & Formal Specification */}

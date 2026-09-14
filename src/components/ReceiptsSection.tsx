@@ -17,6 +17,17 @@ export const ReceiptsSection: React.FC<ReceiptsSectionProps> = ({ payload }) => 
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleDownload = () => {
+    if (!payload) return;
+    const blob = new Blob([jsonText], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `audit_receipt_${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <section className="notebook-cell" id="cell-receipts">
       <div className="cell-header" onClick={() => setIsOpen(!isOpen)} style={{ cursor: 'pointer' }}>
@@ -40,9 +51,19 @@ export const ReceiptsSection: React.FC<ReceiptsSectionProps> = ({ payload }) => 
         <div className="cell-body receipts-body">
           <div className="receipts-bar">
             <span className="bar-label">Raw R Output Payload (Zero-hallucination verification):</span>
-            <button className="mini-btn" onClick={handleCopy}>
-              {copied ? 'COPIED JSON!' : 'COPY JSON'}
-            </button>
+            <div className="receipts-actions">
+              <button className="mini-btn" onClick={handleCopy}>
+                {copied ? 'COPIED JSON!' : 'COPY JSON'}
+              </button>
+              <button
+                className="mini-btn"
+                onClick={handleDownload}
+                disabled={!payload}
+                title="Download as JSON file"
+              >
+                ↓ DOWNLOAD JSON
+              </button>
+            </div>
           </div>
           <pre className="json-viewport">
             <code>{jsonText}</code>

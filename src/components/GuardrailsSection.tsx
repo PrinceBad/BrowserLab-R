@@ -7,6 +7,59 @@ interface GuardrailsSectionProps {
   onHoverMetric: (metric: string | null) => void;
 }
 
+// Plain-English one-liners per status
+const VERDICTS: Record<string, Record<GuardrailStatus | 'pending', string>> = {
+  normality: {
+    pass: 'Residuals are normally distributed. OLS inference is valid.',
+    borderline: 'Slight non-normality. Inspect Q-Q plot tails carefully.',
+    fail: 'Residuals violate normality. Consider robust standard errors.',
+    pending: '',
+  },
+  homoskedasticity: {
+    pass: 'Constant variance confirmed. Standard errors are unbiased.',
+    borderline: 'Mild variance instability. Monitor with residual plots.',
+    fail: 'Heteroskedasticity detected. Use sandwich::vcovHC correction.',
+    pending: '',
+  },
+  vif: {
+    pass: 'Predictors are orthogonal. No collinearity concerns.',
+    borderline: 'Moderate collinearity. Coefficients may shift under resampling.',
+    fail: 'Severe multicollinearity. Consider PCA or ridge regression.',
+    pending: '',
+  },
+  'model-fit': {
+    pass: 'Model is globally significant. Predictors explain the outcome.',
+    borderline: 'Weak model significance. Inspect individual predictors.',
+    fail: 'Model not significant. Predictors do not explain the outcome.',
+    pending: '',
+  },
+};
+
+// Threshold bar config: [min, max, "good" direction]
+const BAR_CONFIG: Record<string, { min: number; max: number; invert: boolean }> = {
+  normality:        { min: 0, max: 1, invert: false },  // p-value, higher = better
+  homoskedasticity: { min: 0, max: 1, invert: false },
+  vif:              { min: 1, max: 10, invert: true },   // VIF, lower = better
+  'model-fit':      { min: 0, max: 1, invert: true },   // p-value, lower = better
+};
+
+function ThresholdBar({ metricId, value, status }: { metricId: string; value: number; status: GuardrailStatus | 'pending' }) {
+  const cfg = BAR_CONFIG[metricId];
+  if (!cfg || status === 'pending') return null;
+
+  const pct = Math.min(100, Math.max(0, ((value - cfg.min) / (cfg.max - cfg.min)) * 100));
+  const fillPct = cfg.invert ? 100 - pct : pct;
+
+  return (
+    <div className="threshold-bar-track">
+      <div
+        className={`threshold-bar-fill status-${status}`}
+        style={{ width: `${fillPct}%` }}
+      />
+    </div>
+  );
+}
+
 export const GuardrailsSection: React.FC<GuardrailsSectionProps> = ({
   payload,
   activeMetric,
@@ -19,10 +72,12 @@ export const GuardrailsSection: React.FC<GuardrailsSectionProps> = ({
     status: GuardrailStatus | 'pending',
     statLabel: string,
     pValLabel: string,
-    thresholdNote: string
+    thresholdNote: string,
+    barValue: number
   ) => {
     const isHighlighted = activeMetric === id;
     const statusText = status.toUpperCase();
+    const verdict = VERDICTS[id]?.[status] || '';
 
     return (
       <div
@@ -40,9 +95,12 @@ export const GuardrailsSection: React.FC<GuardrailsSectionProps> = ({
           <span className="pval-stat">{pValLabel}</span>
         </div>
 
+        <ThresholdBar metricId={id} value={barValue} status={status} />
+
         <div className="card-footer">
           <span className="test-name">{testName}</span>
           <span className="threshold-hint">{thresholdNote}</span>
+          {verdict && <span className="guardrail-verdict">{verdict}</span>}
         </div>
       </div>
     );
@@ -72,7 +130,8 @@ export const GuardrailsSection: React.FC<GuardrailsSectionProps> = ({
             payload ? payload.shapiro.status : 'pending',
             payload ? `W = ${payload.shapiro.statistic}` : 'W = --',
             payload ? `p = ${payload.shapiro.pValue}` : 'p = --',
-            'Pass: p ≥ .10 | Borderline: .05 ≤ p < .10'
+            'Pass: p ≥ .10 | Borderline: .05 ≤ p < .10',
+            payload ? payload.shapiro.pValue : 0
           )}
 
           {/* Homoskedasticity */}
@@ -83,7 +142,8 @@ export const GuardrailsSection: React.FC<GuardrailsSectionProps> = ({
             payload ? payload.breuschPagan.status : 'pending',
             payload ? `Chi2 = ${payload.breuschPagan.statistic}` : 'Chi2 = --',
             payload ? `p = ${payload.breuschPagan.pValue}` : 'p = --',
-            'Pass: p ≥ .10 | Borderline: .05 ≤ p < .10'
+            'Pass: p ≥ .10 | Borderline: .05 ≤ p < .10',
+            payload ? payload.breuschPagan.pValue : 0
           )}
 
           {/* Collinearity */}
@@ -94,7 +154,8 @@ export const GuardrailsSection: React.FC<GuardrailsSectionProps> = ({
             payload ? payload.vif.status : 'pending',
             payload ? `Max VIF = ${payload.vif.maxVif}` : 'Max VIF = --',
             payload ? `${payload.vif.terms.length} predictors` : 'Terms: --',
-            'Pass: VIF < 2.5 | Borderline: 2.5 ≤ VIF < 5.0'
+            'Pass: VIF < 2.5 | Borderline: 2.5 ≤ VIF < 5.0',
+            payload ? payload.vif.maxVif : 0
           )}
 
           {/* Model Fit */}
@@ -105,7 +166,8 @@ export const GuardrailsSection: React.FC<GuardrailsSectionProps> = ({
             payload ? payload.modelFitStatus : 'pending',
             payload ? `F(${payload.dfNum}, ${payload.dfDenom}) = ${payload.fStatistic}` : 'F = --',
             payload ? `p = ${payload.fPValue}` : 'p = --',
-            'Pass: p < .01 | Borderline: .01 ≤ p < .05'
+            'Pass: p < .01 | Borderline: .01 ≤ p < .05',
+            payload ? payload.fPValue : 0
           )}
         </div>
 
