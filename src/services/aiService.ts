@@ -1,3 +1,5 @@
+import { StatisticalAuditPayload } from '../types';
+
 export type LLMProvider = 'builtin' | 'gemini' | 'openai' | 'groq' | 'deepseek' | 'anthropic';
 
 export interface ModelOption {
