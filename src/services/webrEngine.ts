@@ -45,17 +45,22 @@ class WebREngineManager {
     if (this.isInitializing) return;
 
     this.isInitializing = true;
-    this.notify('Loading WebR WebAssembly Binaries...', false);
+    this.notify('Loading WebR WebAssembly Binaries (R 4.3 WASM)...', false);
 
     try {
       this.webr = new WebR({
         channelType: ChannelType.PostMessage,
       });
 
+      this.notify('Compiling WebAssembly bytecode in browser...', false);
       await this.webr.init();
-      this.notify('Mounting Statistical Datasets & Tools...', false);
 
+      this.notify('Seeding statistical datasets into WASM heap...', false);
       await this.initializeDatasets();
+
+      this.notify('JIT-compiling R helper functions...', false);
+      // Small yield so UI can paint the progress message
+      await new Promise((r) => setTimeout(r, 50));
 
       this.isInitialized = true;
       this.isInitializing = false;
@@ -193,7 +198,7 @@ class WebREngineManager {
 
     const plotFile = `/tmp/audit_plot_${Date.now()}.png`;
     const runner = `
-      png("${plotFile}", width = 640, height = 320, res = 72, bg = "#ffffff")
+      png("${plotFile}", width = 900, height = 500, res = 96, bg = "#ffffff")
       par(mfrow = c(1, 2), mar = c(4.2, 4.2, 2.5, 1.2), family = "sans")
       ${plotScript}
       dev.off()
@@ -264,7 +269,7 @@ class WebREngineManager {
 
     const runner = `
       .plot_file <- "${plotFile}"
-      png(.plot_file, width = 680, height = 380, res = 72, bg = "#ffffff")
+      png(.plot_file, width = 900, height = 480, res = 96, bg = "#ffffff")
       
       .captured_lines <- character()
       .parse_err <- NULL

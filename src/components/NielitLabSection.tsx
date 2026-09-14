@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { NIELIT_LABS, NielitLab, LabGradingReport } from '../services/nielitLabs';
 import { webrEngine } from '../services/webrEngine';
 
@@ -22,6 +22,27 @@ export const NielitLabSection: React.FC<NielitLabSectionProps> = ({ engineReady 
   const [predictRevealed, setPredictRevealed] = useState<boolean>(false);
   const [gradingReport, setGradingReport] = useState<LabGradingReport | null>(null);
   const [isGrading, setIsGrading] = useState<boolean>(false);
+
+  // UI upgrades
+  const [plotZoomed, setPlotZoomed] = useState<boolean>(false);
+  const [copiedCode, setCopiedCode] = useState<boolean>(false);
+
+  // ESC key to close plot zoom
+  const handleEsc = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') setPlotZoomed(false);
+  }, []);
+  useEffect(() => {
+    if (plotZoomed) window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [plotZoomed, handleEsc]);
+
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(activeCode);
+    setCopiedCode(true);
+    setTimeout(() => setCopiedCode(false), 2000);
+  };
+
+  const lineCount = activeCode.split('\n').length;
 
   const activeLab: NielitLab = NIELIT_LABS.find((l) => l.id === selectedLabId) || NIELIT_LABS[0];
 
@@ -340,6 +361,14 @@ export const NielitLabSection: React.FC<NielitLabSectionProps> = ({ engineReady 
               <button
                 type="button"
                 className="btn-secondary-sm"
+                onClick={handleCopyCode}
+                title="Copy code to clipboard"
+              >
+                {copiedCode ? '✓ Copied!' : 'Copy Code'}
+              </button>
+              <button
+                type="button"
+                className="btn-secondary-sm"
                 onClick={handleResetCode}
                 title="Reset to initial syllabus template"
               >
@@ -381,7 +410,7 @@ export const NielitLabSection: React.FC<NielitLabSectionProps> = ({ engineReady 
             />
           </div>
           <div className="editor-footer">
-            <span>Powered by WebR (R 4.3 in WebAssembly)</span>
+            <span>Powered by WebR (R 4.3 in WebAssembly) &bull; {lineCount} lines</span>
             <span>Safety: 15s Watchdog Enabled &bull; Shortcuts: <kbd>Ctrl+Enter</kbd></span>
           </div>
         </div>
@@ -394,9 +423,20 @@ export const NielitLabSection: React.FC<NielitLabSectionProps> = ({ engineReady 
               <div className="card-title-group">
                 <span className="card-title-text">R Console Output (STDOUT)</span>
               </div>
-              {executionTimeMs !== null && (
-                <span className="exec-time-pill">Completed in {executionTimeMs}ms</span>
-              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                {executionTimeMs !== null && (
+                  <span className="exec-time-pill">Completed in {executionTimeMs}ms</span>
+                )}
+                {consoleOutput && (
+                  <button
+                    className="mini-btn"
+                    onClick={() => { setConsoleOutput(''); setErrorMsg(null); }}
+                    title="Clear console output"
+                  >
+                    CLEAR
+                  </button>
+                )}
+              </div>
             </div>
 
             {errorMsg && (
@@ -442,6 +482,9 @@ export const NielitLabSection: React.FC<NielitLabSectionProps> = ({ engineReady 
                   src={plotUrl}
                   alt="Generated R graphics device plot"
                   className="nielit-plot-img"
+                  onClick={() => setPlotZoomed(true)}
+                  style={{ cursor: 'zoom-in' }}
+                  title="Click to zoom"
                 />
               ) : (
                 <div className="plot-placeholder">
@@ -453,6 +496,17 @@ export const NielitLabSection: React.FC<NielitLabSectionProps> = ({ engineReady 
           </div>
         </div>
       </div>
+
+      {/* Plot zoom overlay */}
+      {plotZoomed && plotUrl && (
+        <div className="plot-zoom-overlay" onClick={() => setPlotZoomed(false)}>
+          <div className="plot-zoom-inner" onClick={(e) => e.stopPropagation()}>
+            <button className="plot-zoom-close" onClick={() => setPlotZoomed(false)} title="Close (ESC)">✕</button>
+            <img src={plotUrl} alt="Full-screen R plot" className="plot-zoom-img" />
+            <p className="plot-zoom-hint">Press ESC or click ✕ to close</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

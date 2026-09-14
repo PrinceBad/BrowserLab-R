@@ -4,13 +4,44 @@ import { webrEngine } from './webrEngine';
 export class GuardrailService {
   public parseFormula(prompt: string, selectedDataset: string): { formula: string; dataset: string } {
     const text = prompt.toLowerCase();
-    const formulaMatch = prompt.match(/([a-zA-Z_0-9]+)\s*~\s*([a-zA-Z_0-9\s\+\*\:]+)/);
+
+    // Direct R formula syntax takes highest priority
+    const formulaMatch = prompt.match(/([a-zA-Z_0-9\.]+)\s*~\s*([a-zA-Z_0-9\s\+\*\:\.]+)/);
     if (formulaMatch) {
       return { formula: formulaMatch[0].trim(), dataset: selectedDataset };
     }
 
+    // NL: "predict Y from/using/with X and Z" or "does X affect/predict Y"
+    const predictFrom = prompt.match(
+      /predict\s+([a-zA-Z_0-9\.]+)\s+(?:from|using|with|by)\s+([a-zA-Z_0-9\s,\+and]+)/i
+    );
+    if (predictFrom) {
+      const outcome = predictFrom[1].trim();
+      const preds = predictFrom[2]
+        .split(/[,\s+]+and\s+|[,\s]+/)
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .join(' + ');
+      return { formula: `${outcome} ~ ${preds}`, dataset: selectedDataset };
+    }
+
+    const doesAffect = prompt.match(
+      /does?\s+([a-zA-Z_0-9\s,\+and]+)\s+(?:affect|predict|explain|influence)\s+([a-zA-Z_0-9\.]+)/i
+    );
+    if (doesAffect) {
+      const preds = doesAffect[1]
+        .split(/[,\s]+and\s+|[,\s]+/)
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .join(' + ');
+      const outcome = doesAffect[2].trim();
+      return { formula: `${outcome} ~ ${preds}`, dataset: selectedDataset };
+    }
+
+    // Dataset-specific defaults
     if (selectedDataset === 'mtcars') {
       if (text.includes('qsec')) return { formula: 'mpg ~ hp + wt + qsec', dataset: 'mtcars' };
+      if (text.includes('drat') || text.includes('gear')) return { formula: 'mpg ~ hp + wt + drat', dataset: 'mtcars' };
       return { formula: 'mpg ~ hp + wt', dataset: 'mtcars' };
     }
 
@@ -21,6 +52,13 @@ export class GuardrailService {
 
     if (selectedDataset === 'exam' || selectedDataset === 'exam_scores') {
       return { formula: 'exam_score ~ hours_studied + attendance_pct', dataset: 'exam_scores' };
+    }
+
+    if (selectedDataset === 'iris') {
+      if (text.includes('petal.length') || text.includes('petal length')) {
+        return { formula: 'Sepal.Length ~ Petal.Length + Petal.Width', dataset: 'iris' };
+      }
+      return { formula: 'Sepal.Length ~ Sepal.Width + Petal.Length', dataset: 'iris' };
     }
 
     return { formula: 'mpg ~ hp + wt', dataset: selectedDataset };
@@ -104,6 +142,39 @@ to_stat_json(list(
   breuschPagan = list(statistic = bp_stat, pValue = bp_p),
   vif = vifs
 ))`;
+  }
+
+  public generateAdvancedPlotScript(formula: string, dataset: string): string {
+    return `
+      mod <- lm(${formula}, data = ${dataset})
+
+      # 4-panel standard R regression diagnostics
+      par(mfrow = c(2, 2), mar = c(4.2, 4.2, 2.5, 1.2), family = "sans")
+
+      # Panel 1: Residuals vs Fitted
+      plot(mod, which = 1,
+           col = "#4f46e5", pch = 19, cex = 0.9,
+           caption = "")
+      title("Residuals vs Fitted (Homoskedasticity)", cex.main = 0.9)
+
+      # Panel 2: Normal Q-Q
+      plot(mod, which = 2,
+           col = "#059669", pch = 19, cex = 0.9,
+           caption = "")
+      title("Normal Q-Q (Residual Normality)", cex.main = 0.9)
+
+      # Panel 3: Scale-Location (sqrt(|residuals|) vs fitted)
+      plot(mod, which = 3,
+           col = "#d97706", pch = 19, cex = 0.9,
+           caption = "")
+      title("Scale-Location (Variance Stability)", cex.main = 0.9)
+
+      # Panel 4: Cook's Distance (Influential Observations)
+      plot(mod, which = 4,
+           col = "#e11d48", pch = 19, cex = 0.9,
+           caption = "")
+      title("Cook's Distance (Influential Points)", cex.main = 0.9)
+    `;
   }
 
   public generatePlotScript(formula: string, dataset: string): string {
